@@ -4,7 +4,7 @@
         <!-- see https://github.com/jenkinsci/plugin-pom -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>4.46</version>
+        <version>4.66</version>
     </parent>
 
     <artifactId>meliora-testlab</artifactId>
