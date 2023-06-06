@@ -1,6 +1,6 @@
 package fi.meliora.testlab.ext.jenkins.test;
 
-import com.gargoylesoftware.htmlunit.html.*;
+import org.htmlunit.html.*;
 import fi.meliora.testlab.ext.jenkins.TestlabNotifier;
 import hudson.model.FreeStyleProject;
 import org.junit.Test;
@@ -46,12 +46,12 @@ public class SettingsTest extends TestBase {
         assertChecked(corsInput, false);
         assertHasValue(originsInput, "*");
 
-        companyIdInput.setValueAttribute("unittestcompany");
+        companyIdInput.setValue("unittestcompany");
         usingonpremiseInput.setChecked(true);
-        onpremiseurlInput.setValueAttribute("https://unittesthost:8080");
-        apiKeyInput.setValueAttribute("1010101010202020");
+        onpremiseurlInput.setValue("https://unittesthost:8080");
+        apiKeyInput.setValue("1010101010202020");
         corsInput.setChecked(true);
-        originsInput.setValueAttribute("http://somehost, http://anotherhost");
+        originsInput.setValue("http://somehost, http://anotherhost");
 
         j.submit(form);
 
@@ -172,9 +172,9 @@ public class SettingsTest extends TestBase {
 
         //// set only required fields and assert save
 
-        projectkeyInput.setValueAttribute("PROJ");
-        rulesetInput.setValueAttribute("ruleset");
-        automationSourceInput.setValueAttribute("source");
+        projectkeyInput.setValue("PROJ");
+        rulesetInput.setValue("ruleset");
+        automationSourceInput.setValue("source");
         j.submit(form);
         configurePage = client.goTo("job/test/configure");
         form = configurePage.getFormByName("config");
@@ -238,23 +238,23 @@ public class SettingsTest extends TestBase {
         //// set other optional fields and issues block and assert save
 
         rulesetSettingsInput.setChecked(true);
-        testRunTitleInput.setValueAttribute("Test run");
-        milestoneInput.setValueAttribute("Milestone 1");
-        testTargetTitleInput.setValueAttribute("Some version");
-        testEnvironmentTitleInput.setValueAttribute("Some env");
+        testRunTitleInput.setValue("Test run");
+        milestoneInput.setValue("Milestone 1");
+        testTargetTitleInput.setValue("Some version");
+        testEnvironmentTitleInput.setValue("Some env");
         addIssueStrategyInput.setSelectedAttribute("ADDPERTESTRUN", true);
         reopenExistingInput.setSelectedAttribute("true", true);
-        assignToUserInput.setValueAttribute("someuser");
+        assignToUserInput.setValue("someuser");
         commentInput.setText("comment text");
-        tagsInput.setValueAttribute("jenkins tags");
-        parametersInput.setValueAttribute("var1, var2");
+        tagsInput.setValue("jenkins tags");
+        parametersInput.setValue("var1, var2");
         publishTapInput.setChecked(true);
         tapTestsAsStepsInput.setChecked(true);
         tapFileNameInIdentifier.setChecked(false);
         tapTestNumberInIdentifier.setChecked(true);
-        tapMappingPrefixInput.setValueAttribute("PREF");
+        tapMappingPrefixInput.setValue("PREF");
         publishRobotInput.setChecked(true);
-        robotOutputInput.setValueAttribute("results/output2.xml");
+        robotOutputInput.setValue("results/output2.xml");
         robotCatenateParentKeywordsInput.setSelectedAttribute("false", true);
 
         j.submit(form);
@@ -329,10 +329,10 @@ public class SettingsTest extends TestBase {
         //// set advanced setting fields and assert save
 
         advancedSettingsInput.setChecked(true);
-        companyIdInput.setValueAttribute("unittestcompanyjob");
+        companyIdInput.setValue("unittestcompanyjob");
         usingonpremiseInput.setChecked(true);
-        onpremiseurlInput.setValueAttribute("https://unittesthost:8080");
-        apiKeyInput.setValueAttribute("1010101010303030");
+        onpremiseurlInput.setValue("https://unittesthost:8080");
+        apiKeyInput.setValue("1010101010303030");
         j.submit(form);
         configurePage = client.goTo("job/test/configure");
         form = configurePage.getFormByName("config");

@@ -3,7 +3,7 @@ package fi.meliora.testlab.ext.jenkins.test;
 import com.gargoylesoftware.css.parser.CSSErrorHandler;
 import com.gargoylesoftware.css.parser.CSSException;
 import com.gargoylesoftware.css.parser.CSSParseException;
-import com.gargoylesoftware.htmlunit.html.*;
+import org.htmlunit.html.*;
 import hudson.util.Secret;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
@@ -74,7 +74,7 @@ public class TestBase {
      * @param input
      */
     protected void assertEmpty(HtmlInput input) {
-        assertTrue(input.getNameAttribute() + " was not empty, was: " + input.getValueAttribute(), StringUtils.isEmpty(input.getValueAttribute()));
+        assertTrue(input.getNameAttribute() + " was not empty, was: " + input.getValue(), StringUtils.isEmpty(input.getValue()));
     }
 
     /**
@@ -84,7 +84,7 @@ public class TestBase {
      * @param value
      */
     protected void assertHasValue(HtmlInput input, String value) {
-        assertTrue(input.getNameAttribute() + " value was not " + value + ": was " + input.getValueAttribute(), value.equals(input.getValueAttribute()));
+        assertTrue(input.getNameAttribute() + " value was not " + value + ": was " + input.getValue(), value.equals(input.getValue()));
     }
 
     /**
@@ -115,7 +115,7 @@ public class TestBase {
      */
     protected void assertPassword(HtmlInput input, String plainText) {
         String decrypted = null;
-        Secret secret = Secret.decrypt(input.getValueAttribute());
+        Secret secret = Secret.decrypt(input.getValue());
         if(secret != null)
             decrypted = secret.getPlainText();
         assertTrue(input.getNameAttribute() + " password was not " + plainText + ": was " + decrypted, plainText.equals(decrypted));
@@ -130,7 +130,7 @@ public class TestBase {
     protected void assertSingleSelected(HtmlSelect input, String option) {
         List<HtmlOption> options = input.getSelectedOptions();
         assertEquals(input.getNameAttribute() + " select has multiple selections: " + options, 1, options.size());
-        String selected = options.get(0).getValueAttribute();
+        String selected = options.get(0).getValue();
         l(options.get(0).toString());
         assertEquals(input.getNameAttribute() + " select is not " + option, option, selected);
     }
