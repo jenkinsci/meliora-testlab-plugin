@@ -159,23 +159,6 @@ public class TestBase {
      */
     protected JenkinsRule.WebClient getWebClient() {
         JenkinsRule.WebClient webClient = j.createWebClient();
-//        webClient.setThrowExceptionOnFailingStatusCode(false);
-	/*
-        webClient.setCssErrorHandler(new CSSErrorHandler() {
-            @Override
-            public void warning(CSSParseException e) throws CSSException {
-            }
-
-            @Override
-            public void error(CSSParseException e) throws CSSException {
-            }
-
-            @Override
-            public void fatalError(CSSParseException e) throws CSSException {
-            }
-        });
-	*/
-//        webClient.setPrintContentOnFailingStatusCode(false);
         return webClient;
     }
 
