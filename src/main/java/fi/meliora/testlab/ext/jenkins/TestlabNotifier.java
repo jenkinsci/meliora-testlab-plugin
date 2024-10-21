@@ -19,7 +19,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.StaplerRequest;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.*;
@@ -391,7 +391,7 @@ public class TestlabNotifier extends Notifier implements SimpleBuildStep {
      * @throws IOException if something goes wrong; use AbortException for a polite error
      */
     @Override
-    public void perform(@Nonnull Run<?, ?> run, @Nonnull FilePath workspace, @Nonnull Launcher launcher, @Nonnull TaskListener listener) throws InterruptedException, IOException {
+    public void perform(@NonNull Run<?, ?> run, @NonNull FilePath workspace, @NonNull Launcher launcher, @NonNull TaskListener listener) throws InterruptedException, IOException {
         doPerform(run, workspace, listener);
     }
 
