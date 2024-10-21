@@ -1,8 +1,5 @@
 package fi.meliora.testlab.ext.jenkins.test;
 
-import com.gargoylesoftware.css.parser.CSSErrorHandler;
-import com.gargoylesoftware.css.parser.CSSException;
-import com.gargoylesoftware.css.parser.CSSParseException;
 import org.htmlunit.html.*;
 import hudson.util.Secret;
 import org.apache.commons.lang.StringUtils;
@@ -130,7 +127,7 @@ public class TestBase {
     protected void assertSingleSelected(HtmlSelect input, String option) {
         List<HtmlOption> options = input.getSelectedOptions();
         assertEquals(input.getNameAttribute() + " select has multiple selections: " + options, 1, options.size());
-        String selected = options.get(0).getValue();
+        String selected = options.get(0).getValueAttribute();
         l(options.get(0).toString());
         assertEquals(input.getNameAttribute() + " select is not " + option, option, selected);
     }
@@ -163,6 +160,7 @@ public class TestBase {
     protected JenkinsRule.WebClient getWebClient() {
         JenkinsRule.WebClient webClient = j.createWebClient();
 //        webClient.setThrowExceptionOnFailingStatusCode(false);
+	/*
         webClient.setCssErrorHandler(new CSSErrorHandler() {
             @Override
             public void warning(CSSParseException e) throws CSSException {
@@ -176,6 +174,7 @@ public class TestBase {
             public void fatalError(CSSParseException e) throws CSSException {
             }
         });
+	*/
 //        webClient.setPrintContentOnFailingStatusCode(false);
         return webClient;
     }
