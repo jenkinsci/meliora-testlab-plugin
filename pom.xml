@@ -4,7 +4,7 @@
         <!-- see https://github.com/jenkinsci/plugin-pom -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>4.66</version>
+        <version>4.88</version>
     </parent>
 
     <artifactId>meliora-testlab</artifactId>
@@ -41,7 +41,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spotbugs.failOnError>false</spotbugs.failOnError>
-        <jenkins.version>2.361.4</jenkins.version>
+        <jenkins.version>2.452.4</jenkins.version>
     </properties>
 
     <!-- get every artifact through repo.jenkins-ci.org, which proxies all the artifacts that we need -->
@@ -63,8 +63,8 @@
         <dependencies>
             <dependency>
                 <groupId>io.jenkins.tools.bom</groupId>
-                <artifactId>bom-2.361.x</artifactId>
-                <version>2102.v854b_fec19c92</version>
+                <artifactId>bom-2.452.x</artifactId>
+                <version>3532.v8059503f6b_23</version>
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
