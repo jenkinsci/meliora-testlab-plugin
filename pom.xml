@@ -8,7 +8,7 @@
     </parent>
 
     <artifactId>meliora-testlab</artifactId>
-    <version>1.23-SNAPSHOT</version>
+    <version>${revision}${changelist}</version>
     <packaging>hpi</packaging>
     <description>Publishes results of automated tests to Meliora Testlab</description>
     <url>https://github.com/jenkinsci/meliora-testlab-plugin/blob/master/README.md</url>
@@ -21,10 +21,10 @@
     </licenses>
 
     <scm>
-        <connection>scm:git:ssh://github.com/jenkinsci/meliora-testlab-plugin.git</connection>
-        <developerConnection>scm:git:ssh://git@github.com/jenkinsci/meliora-testlab-plugin.git</developerConnection>
-        <url>https://github.com/jenkinsci/meliora-testlab-plugin</url>
-        <tag>HEAD</tag>
+        <connection>scm:git:https://github.com/${gitHubRepo}.git</connection>
+        <developerConnection>scm:git:git@github.com:${gitHubRepo}.git</developerConnection>
+        <url>https://github.com/${gitHubRepo}</url>
+        <tag>${scmTag}</tag>
     </scm>
 
     <developers>
@@ -39,6 +39,9 @@
     </developers>
 
     <properties>
+        <revision>1.23</revision>
+        <changelist>-SNAPSHOT</changelist>
+        <gitHubRepo>jenkinsci/meliora-testlab-plugin</gitHubRepo>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spotbugs.failOnError>false</spotbugs.failOnError>
         <jenkins.version>2.452.4</jenkins.version>
