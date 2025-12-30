@@ -4,7 +4,7 @@
         <!-- see https://github.com/jenkinsci/plugin-pom -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>4.66</version>
+        <version>5.31</version>
     </parent>
 
     <artifactId>meliora-testlab</artifactId>
@@ -45,7 +45,14 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spotbugs.failOnError>false</spotbugs.failOnError>
 
-        <jenkins.version>2.452.4</jenkins.version>
+        <jenkins.baseline>2.504</jenkins.baseline>
+        <jenkins.version>${jenkins.baseline}.3</jenkins.version>
+        <!-- see https://repo.jenkins-ci.org/artifactory/public/io/jenkins/tools/bom/ -->
+        <jenkins.tools.bom.version>5804.v80587a_38d937</jenkins.tools.bom.version>
+
+        <version.jenkins.org.tap4j.tap>2.4.2</version.jenkins.org.tap4j.tap>
+        <version.jenkins.git>5.8.1</version.jenkins.git>
+        <version.jenkins.mercurial>1323.ve69d2a_db_8a_b_d</version.jenkins.mercurial>
     </properties>
 
     <!-- get every artifact through repo.jenkins-ci.org, which proxies all the artifacts that we need -->
@@ -67,8 +74,8 @@
         <dependencies>
             <dependency>
                 <groupId>io.jenkins.tools.bom</groupId>
-                <artifactId>bom-2.452.x</artifactId>
-                <version>3532.v8059503f6b_23</version>
+                <artifactId>bom-${jenkins.baseline}.x</artifactId>
+                <version>${jenkins.tools.bom.version}</version>
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
@@ -82,6 +89,16 @@
             <artifactId>codegist-crest</artifactId>
             <version>2.0.0-RC2</version>
             <classifier>all</classifier>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-databind</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>javax.ws.rs</groupId>
@@ -106,27 +123,22 @@
         </dependency>
 
         <dependency>
-            <groupId>io.jenkins.plugins</groupId>
-            <artifactId>jaxb</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>org.tap4j</groupId>
             <artifactId>tap</artifactId>
-            <version>2.2.1</version>
+            <version>${version.jenkins.org.tap4j.tap}</version>
             <optional>true</optional>
         </dependency>
 
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>git</artifactId>
-            <version>5.5.2</version>
+            <version>${version.jenkins.git}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>mercurial</artifactId>
-            <version>1260.vdfb_723cdcc81</version>
+            <version>${version.jenkins.mercurial}</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.google.errorprone</groupId>

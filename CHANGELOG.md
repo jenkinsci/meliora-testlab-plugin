@@ -1,6 +1,11 @@
 Changelog
 ===
 
+### 1.25
+
+-   Updates on dependencies
+-   Bump Jenkins baseline to 2.504
+
 ### 1.24
 
 -   Updates on dependencies

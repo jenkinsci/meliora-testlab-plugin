@@ -120,11 +120,6 @@ public class TestlabNotifier extends Notifier implements SimpleBuildStep {
         return projectKey;
     }
 
-//    @DataBoundSetter
-//    public void setProjectKey(String projectKey) {
-//        this.projectKey = projectKey;
-//    }
-
     // ruleset to use to map the results to test case
     private String ruleset;
 
@@ -343,39 +338,11 @@ public class TestlabNotifier extends Notifier implements SimpleBuildStep {
         this.advancedSettings = advancedSettings;
     }
 
-    /**
-     * Return true if this {@link hudson.tasks.Publisher} needs to run after the build result is
-     * fully finalized.
-     * <p/>
-     * <p/>
-     * The execution of normal {@link hudson.tasks.Publisher}s are considered within a part
-     * of the build. This allows publishers to mark the build as a failure, or
-     * to include their execution time in the total build time.
-     * <p/>
-     * <p/>
-     * So normally, that is the preferrable behavior, but in a few cases
-     * this is problematic. One of such cases is when a publisher needs to
-     * trigger other builds, which in turn need to see this build as a
-     * completed build. Those plugins that need to do this can return true
-     * from this method, so that the {@link #perform(hudson.model.AbstractBuild, hudson.Launcher, hudson.model.BuildListener)}
-     * method is called after the build is marked as completed.
-     * <p/>
-     * <p/>
-     * When {@link hudson.tasks.Publisher} behaves this way, note that they can no longer
-     * change the build status anymore.
-     *
-     * @since 1.153
-     */
     @Override
     public boolean needsToRunAfterFinalized() {
         return true;
     }
 
-    /**
-     * Declares the scope of the synchronization monitor this {@link hudson.tasks.BuildStep} expects from outside.
-     *
-     * @since 1.319
-     */
     @Override
     public BuildStepMonitor getRequiredMonitorService() {
         // from the contract of SimpleBuildStep
@@ -393,9 +360,7 @@ public class TestlabNotifier extends Notifier implements SimpleBuildStep {
     }
 
     /**
-     * Execute our logic.
-     *
-     * Should throw AbortException for graceful and polite errors.
+     * Execute our logic. Should throw AbortException for graceful and polite errors.
      */
     protected boolean doPerform(Run<?, ?> build, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
         listener.getLogger().println("Publishing test results to Testlab project: " + projectKey);
@@ -781,9 +746,7 @@ public class TestlabNotifier extends Notifier implements SimpleBuildStep {
     }
 
     /**
-     * Optional job config block for ruleset settings.
-     *
-     * If set implicitly implies that some ruleset settings should be overridden.
+     * Optional job config block for ruleset settings. If set implicitly implies that some ruleset settings should be overridden.
      */
     public static final class RulesetSettings {
         // name of the test run to create or update at Testlab side
@@ -1116,9 +1079,7 @@ public class TestlabNotifier extends Notifier implements SimpleBuildStep {
     }
 
     /**
-     * Optional job config block for TAP support.
-     *
-     * If set implicitly implies that TAP results should be published to Testlab.
+     * Optional job config block for TAP support. If set implicitly implies that TAP results should be published to Testlab.
      */
     public static final class PublishTap {
         // If set, each TAP file will be mapped to a single test case in Testlab and the steps of the test case will be overwritten and matched to sent lines in TAP file
@@ -1189,9 +1150,7 @@ public class TestlabNotifier extends Notifier implements SimpleBuildStep {
     }
 
     /**
-     * Optional job config block for Robot Framework support.
-     *
-     * If set implicitly implies that Robot results should be published to Testlab.
+     * Optional job config block for Robot Framework support. If set implicitly implies that Robot results should be published to Testlab.
      */
     public static final class PublishRobot {
         // Robot output.xml file path
