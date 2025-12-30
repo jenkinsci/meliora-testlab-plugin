@@ -45,6 +45,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spotbugs.failOnError>false</spotbugs.failOnError>
 
+        <hpi.bundledArtifacts>codegist-common,codegist-crest,jsr311-api,slf4j-api,slf4j-jdk14</hpi.bundledArtifacts>
+
         <jenkins.baseline>2.504</jenkins.baseline>
         <jenkins.version>${jenkins.baseline}.3</jenkins.version>
         <!-- see https://repo.jenkins-ci.org/artifactory/public/io/jenkins/tools/bom/ -->
