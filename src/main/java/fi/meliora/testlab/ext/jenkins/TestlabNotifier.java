@@ -10,6 +10,7 @@ import hudson.tasks.*;
 import hudson.util.ListBoxModel;
 import hudson.util.PluginServletFilter;
 import hudson.util.Secret;
+import io.jenkins.servlet.FilterWrapper;
 import jenkins.scm.RunWithSCM;
 import jenkins.tasks.SimpleBuildStep;
 import net.sf.json.JSONObject;
@@ -19,10 +20,11 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
-import org.kohsuke.stapler.StaplerRequest;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
-import javax.servlet.ServletException;
+import org.kohsuke.stapler.StaplerRequest2;
+
+import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
@@ -608,7 +610,7 @@ public class TestlabNotifier extends Notifier implements SimpleBuildStep {
         @Initializer(after = InitMilestone.SYSTEM_CONFIG_ADAPTED)
         public static void startCORS() {
             try {
-                PluginServletFilter.addFilter(CORSFilter);
+                PluginServletFilter.addFilter(FilterWrapper.toJakartaFilter(CORSFilter));
                 log.info("CORSFilter injected.");
             } catch (ServletException se) {
                 log.warning("Could not inject CORSFilter.");
@@ -633,7 +635,7 @@ public class TestlabNotifier extends Notifier implements SimpleBuildStep {
         }
 
         @Override
-        public boolean configure(StaplerRequest staplerRequest, JSONObject json) throws Descriptor.FormException {
+        public boolean configure(StaplerRequest2 staplerRequest, JSONObject json) throws Descriptor.FormException {
             // persist configuration
             companyId = json.getString("companyId");
             apiKey = Secret.fromString(json.getString("apiKey"));

@@ -1,12 +1,16 @@
 package fi.meliora.testlab.ext.jenkins;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import fi.meliora.testlab.ext.rest.model.*;
+import fi.meliora.testlab.ext.crest.CrestEndpointFactory;
+import fi.meliora.testlab.ext.crest.TestResultResource;
+import fi.meliora.testlab.ext.rest.model.AddTestResultResponse;
+import fi.meliora.testlab.ext.rest.model.KeyValuePair;
+import fi.meliora.testlab.ext.rest.model.TestCaseResult;
+import fi.meliora.testlab.ext.rest.model.TestCaseResultStep;
 import hudson.AbortException;
 import hudson.FilePath;
 import hudson.Util;
+import hudson.model.AbstractBuild;
 import hudson.model.Action;
-import hudson.model.Run;
 import hudson.remoting.VirtualChannel;
 import hudson.tasks.junit.CaseResult;
 import hudson.tasks.junit.SuiteResult;
@@ -14,25 +18,24 @@ import hudson.tasks.test.AbstractTestResultAction;
 import hudson.tasks.test.AggregatedTestResultAction;
 import hudson.tasks.test.TestResult;
 import jenkins.MasterToSlaveFileCallable;
-import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.types.FileSet;
+import org.tap4j.plugin.TapTestResultAction;
+import org.tap4j.plugin.model.TapTestResultResult;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.net.URI;
 import java.net.URLDecoder;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -63,51 +66,52 @@ public class Sender {
 
     /**
      * Does the actual sending of results to Testlab. Called from appropriate Jenkins extension point.
-     * @param tapTestsAsSteps,
-     * @param tapFileNameInIdentifier,
+     *
      * @param workspace
      * @param companyId
      * @param usingonpremise
      * @param onpremiseurl
      * @param apiKey
      * @param projectKey
-     * @param ruleset
+     * @param source
      * @param milestone
      * @param testRunTitle
-     * @param description
+     * @param comment
      * @param testTargetTitle
      * @param testEnvironmentTitle
      * @param tags
      * @param parameters
-     * @param addIssueStrategy
+     * @param addIssues
+     * @param mergeAsSingleIssue
      * @param reopenExisting
      * @param assignToUser
      * @param publishTap
+     * @param tapTestsAsSteps,
+     * @param tapFileNameInIdentifier,
      * @param tapTestNumberInIdentifier
+     * @param importTestCases
+     * @param importTestCasesRootCategory
+     * @param testCaseMappingField
      * @param publishRobot
      * @param robotOutput
      * @param robotCatenateParentKeywords
-     * @param automationSource
-     * @param resultName
-     * @param culprits
-     * @param changesets
      * @param build
      */
-    public static void sendResults(final FilePath workspace, String companyId, boolean usingonpremise, String onpremiseurl, String apiKey, String projectKey, String ruleset, String milestone,
-                                   String testRunTitle, String description, String testTargetTitle, String testEnvironmentTitle, String tags,
-                                   Map<String, String> parameters, fi.meliora.testlab.ext.rest.model.TestResult.AddIssueStrategy addIssueStrategy, Boolean reopenExisting, String assignToUser,
+    public static void sendResults(final FilePath workspace, String companyId, boolean usingonpremise, String onpremiseurl, String apiKey, String projectKey, String source, String milestone,
+                                   String testRunTitle, String comment, String testTargetTitle, String testEnvironmentTitle, String tags,
+                                   Map<String, String> parameters, Boolean addIssues, Boolean mergeAsSingleIssue, Boolean reopenExisting, String assignToUser,
                                    boolean publishTap, boolean tapTestsAsSteps, boolean tapFileNameInIdentifier, boolean tapTestNumberInIdentifier, String tapMappingPrefix,
-                                   boolean publishRobot, String robotOutput, Boolean robotCatenateParentKeywords,
-                                   String automationSource, String resultName, List<String> culprits, List<Changeset> changesets, Run<?, ?> build) {
-
+                                   Boolean importTestCases, String importTestCasesRootCategory,
+                                   String testCaseMappingField, boolean publishRobot, String robotOutput, Boolean robotCatenateParentKeywords, AbstractBuild<?, ?> build) {
         // no need to validate params here, extension ensures we have some values set
 
         if(log.isLoggable(Level.FINE))
-            log.fine("Running Sender - " + companyId + ", " + usingonpremise + ", " + onpremiseurl + ", api key hidden, " + projectKey + ", " + ruleset + ", " + milestone
-                    + ", " + testRunTitle + ", " + description + ", " + testTargetTitle + ", " + testEnvironmentTitle + ", " + tags + ", [" + parameters + "], "
-                    + addIssueStrategy + ", " + reopenExisting + ", " + assignToUser
+            log.fine("Running Sender - " + companyId + ", " + usingonpremise + ", " + onpremiseurl + ", api key hidden, " + projectKey + ", " + source + ", " + milestone
+                    + ", " + testRunTitle + ", " + comment + ", " + testTargetTitle + ", " + testEnvironmentTitle + ", " + tags + ", [" + parameters + "], "
+                    + addIssues + ", " + mergeAsSingleIssue + ", " + reopenExisting + ", " + assignToUser
                     + ", " + publishTap + ", " + tapTestsAsSteps + ", " + tapFileNameInIdentifier + ", " + tapTestNumberInIdentifier + ", " + tapMappingPrefix
-                    + ", " + publishRobot + ", " + robotOutput + ", " + robotCatenateParentKeywords + ", " + automationSource
+                    + ", " + importTestCases + ", " + importTestCasesRootCategory
+                    + ", " + testCaseMappingField + ", " + publishRobot + ", " + robotOutput + ", " + robotCatenateParentKeywords
             );
 
         if(log.isLoggable(Level.FINE))
@@ -120,7 +124,7 @@ public class Sender {
         for(Action a : build.getAllActions()) {
             if(log.isLoggable(Level.FINE))
                 log.fine("Action: " + a);
-            if (hasTAPSupport && a instanceof org.tap4j.plugin.TapTestResultAction) {
+            if (hasTAPSupport && a instanceof TapTestResultAction) {
                 ras.add(a);
             } else if (a instanceof AbstractTestResultAction) {
                 ras.add(a);
@@ -141,37 +145,37 @@ public class Sender {
             }
         }
 
-        if(ras.isEmpty() && (publishRobot && robotXml == null)) {
+        if(ras.size() == 0 && (publishRobot && robotXml == null)) {
             log.warning("We have no results to publish. Please make sure your job is configured to publish some test results to make them available to this plugin.");
         } else {
-            String user = "Jenkins job: " + build.getParent().getDisplayName();
+            String user = "Jenkins job: " + build.getProject().getDisplayName();
 
             fi.meliora.testlab.ext.rest.model.TestResult data = new fi.meliora.testlab.ext.rest.model.TestResult();
+            data.setStatus(fi.meliora.testlab.ext.rest.model.TestResult.STATUS_FINISHED);
             data.setProjectKey(projectKey);
-            data.setRuleset(ruleset);
-            data.setAutomationSourceTitle(automationSource);
+            data.setSource(source);
             data.setTestRunTitle(testRunTitle);
             // note: we send the set milestone in both fields as backend logic tries first with identifier and fallbacks to title
             data.setMilestoneIdentifier(milestone);
             data.setMilestoneTitle(milestone);
-            data.setAddIssueStrategy(addIssueStrategy);
+            data.setAddIssues(addIssues);
+            data.setMergeAsSingleIssue(mergeAsSingleIssue);
             data.setReopenExistingIssues(reopenExisting);
             data.setAssignIssuesToUser(assignToUser);
+            data.setTestCaseMappingField(testCaseMappingField);
             data.setUser(user);
-            data.setDescription(description);
-            data.setResultName(resultName);
-            data.setCulprits(culprits);
-            data.setChangesets(changesets);
-
-            if(parameters != null && !parameters.isEmpty()) {
+            data.setComment(comment);
+            data.setImportTestCases(importTestCases);
+            data.setImportTestCasesRootCategory(importTestCasesRootCategory);
+            if(parameters != null && parameters.size() > 0) {
                 List<KeyValuePair> parameterValues = new ArrayList<KeyValuePair>();
-                for(Map.Entry<String, String> entry : parameters.entrySet()) {
+                for(String name : parameters.keySet()) {
                     KeyValuePair kvp = new KeyValuePair();
-                    kvp.setKey(entry.getKey());
-                    kvp.setValue(entry.getValue());
+                    kvp.setKey(name);
+                    kvp.setValue(parameters.get(name));
                     parameterValues.add(kvp);
                     if(log.isLoggable(Level.FINE))
-                        log.fine("Sending test case parameter " + entry.getKey() + " with value " + kvp.getValue());
+                        log.fine("Sending test case parameter " + name + " with value " + kvp.getValue());
                 }
                 data.setParameters(parameterValues);
             }
@@ -191,7 +195,7 @@ public class Sender {
 
             for(Object ra : ras) {
                 Object resultObject = null;
-                if(hasTAPSupport && ra instanceof org.tap4j.plugin.TapTestResultAction) {
+                if(ra instanceof TapTestResultAction) {
                     try {
                         // due to 2.1 change in tap plugin, try to keep compatibility to tap plugin < 2.1
                         Method m = ra.getClass().getMethod("getResult");
@@ -200,7 +204,7 @@ public class Sender {
                         log.fine("Could not resolve TapTestResultAction result: " + e.getMessage());
                     }
                 } else if(ra instanceof AbstractTestResultAction) {
-                    resultObject = ((AbstractTestResultAction<?>)ra).getResult();
+                    resultObject = ((AbstractTestResultAction)ra).getResult();
                 }
                 if(resultObject != null) {
                     if (resultObject instanceof List) {
@@ -219,7 +223,7 @@ public class Sender {
                 }
             }
 
-            if (!results.isEmpty()) {
+            if (results.size() > 0) {
                 if (log.isLoggable(Level.FINE))
                     log.fine("Sending " + results.size() + " test results to Testlab.");
                 data.setResults(results);
@@ -241,66 +245,20 @@ public class Sender {
             if(hadResults) {
                 // send results to testlab
                 String onpremiseUrl = usingonpremise ? onpremiseurl : null;
-
-                HttpResponse<String> response = null;
-                if(!"true".equalsIgnoreCase(System.getProperty("TESTLAB_SENDER_SKIP_SEND"))) {
-
-                    try {
-                        HttpClient client = HttpClient.newHttpClient();
-                        ObjectMapper mapper = new ObjectMapper();
-
-                        String json = mapper.writeValueAsString(data);
-                        HttpRequest request = getHttpRequest(companyId, onpremiseUrl, apiKey, json);
-
-                        response = client.send(request, HttpResponse.BodyHandlers.ofString());
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                }
+                AddTestResultResponse response = CrestEndpointFactory.getInstance().getTestlabEndpoint(
+                        companyId, onpremiseUrl, apiKey, TestResultResource.class
+                ).addTestResult(data);
 
                 if(log.isLoggable(Level.INFO))
-                    log.info("Posted results successfully to testlab test run: " + (response != null ? response.body() : "TESTLAB_SENDER_SKIP_SEND"));
+                    log.info("Posted results successfully to testlab test run: " + response.getTestRunId());
             } else {
                 if(log.isLoggable(Level.INFO))
                     log.info("No test results resolved to send to Testlab. Skipping.");
             }
         }
     }
-    
-    protected static HttpRequest getHttpRequest(String companyId, String onpremiseUrl, String apiKey, String postData) {
-        String baseUrl;
-        if(onpremiseUrl != null && !onpremiseUrl.trim().isEmpty()) {
-            // on-premise testlab
-            StringBuilder sb = new StringBuilder();
-            sb.append(onpremiseUrl);
-            if(!onpremiseUrl.endsWith("/")) {
-                sb.append('/');
-            }
-            sb.append("api");
-            baseUrl = sb.toString();
-            // force company id as "company" for calls to on-premise installations
-            companyId = "company";
-        } else {
-            // hosted testlab
-            baseUrl = System.getProperty(
-                    "TESTLAB_" + companyId.toUpperCase(),
-                    "https://" + companyId.toLowerCase() + ".melioratestlab.com/api"
-            );
-        }
 
-        String username = onpremiseUrl != null ? "company" : companyId;
-
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(baseUrl + "/testresult"))
-                .header("Content-Type", "application/json")
-                .header("Authorization", "Basic " + Base64.getEncoder().encodeToString((username + ":" + apiKey).getBytes()))
-                .PUT(HttpRequest.BodyPublishers.ofString(postData))
-                .build();
-
-        return request;
-    }
-
-    protected static void parseResult(Run<?, ?> build, Object resultObject, final List<TestCaseResult> results, String user,
+    protected static void parseResult(AbstractBuild<?, ?> build, Object resultObject, final List<TestCaseResult> results, String user,
                                       boolean publishTap, boolean tapTestsAsSteps, boolean tapFileNameInIdentifier, boolean tapTestNumberInIdentifier, String tapMappingPrefix) {
         if(resultObject instanceof hudson.tasks.test.TestResult) {
             TestResult result = (TestResult)resultObject;
@@ -344,7 +302,7 @@ public class Sender {
                 org.tap4j.plugin.model.TapStreamResult tsr = (org.tap4j.plugin.model.TapStreamResult)result;
 
                 for(TestResult tr : tsr.getChildren()) {
-                    org.tap4j.plugin.model.TapTestResultResult r = (org.tap4j.plugin.model.TapTestResultResult)tr;
+                    TapTestResultResult r = (TapTestResultResult)tr;
 
                     // see https://testanything.org/tap-specification.html
 
@@ -450,7 +408,7 @@ public class Sender {
 
                             List<TestCaseResultStep> steps = testCaseResult.getSteps();
                             if(steps == null) {
-                                steps = new ArrayList<>();
+                                steps = new ArrayList<TestCaseResultStep>();
                                 testCaseResult.setSteps(steps);
                             }
                             steps.add(testCaseResultStep);
@@ -500,7 +458,7 @@ public class Sender {
         }
     }
 
-    protected static TestCaseResult getTestCaseResult(Run<?, ?> build, String id, int result, String msg, String stacktrace, String user, float duration) {
+    protected static TestCaseResult getTestCaseResult(AbstractBuild<?, ?> build, String id, int result, String msg, String stacktrace, String user, float duration) {
         TestCaseResult r = new TestCaseResult();
         r.setMappingId(id);
         r.setResult(result);
@@ -554,11 +512,18 @@ public class Sender {
                     throw new AbortException("Robot Output path " + robotOutput + " matches more than one file. Pattern must be more exact. Aborting.");
                 }
                 File outputXml = new File(ds.getBasedir(), files[0]);
-                byte[] bytes = FileUtils.readFileToByteArray(outputXml);
-                String encoding = detectXmlEncoding(bytes);
-                if(encoding == null)
-                    encoding = "UTF-8";
-                return new String(bytes, encoding);
+                FileReader r = null;
+                try {
+                    r = new FileReader(outputXml);
+                    byte[] bytes = IOUtils.toByteArray(r);
+                    String encoding = detectXmlEncoding(bytes);
+                    if(encoding == null)
+                        encoding = "UTF-8";
+                    return new String(bytes, encoding);
+                } finally {
+                    if(r != null)
+                        try { r.close(); } catch (Exception e) {}
+                }
             }
             return null;
         }

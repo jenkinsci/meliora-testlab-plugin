@@ -45,7 +45,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spotbugs.failOnError>false</spotbugs.failOnError>
 
-        <hpi.bundledArtifacts>codegist-common,codegist-crest,jsr311-api,slf4j-api,slf4j-jdk14</hpi.bundledArtifacts>
+        <hpi.bundledArtifacts>jackson-annotations,jackson-core,jackson-databind,jsr311-api,slf4j-api,slf4j-jdk14</hpi.bundledArtifacts>
 
         <jenkins.baseline>2.504</jenkins.baseline>
         <jenkins.version>${jenkins.baseline}.3</jenkins.version>
@@ -85,27 +85,16 @@
     </dependencyManagement>
 
     <dependencies>
-        <!-- deps of meliora ext common, just here to match the release pom -->
-        <dependency>
-            <groupId>org.codegist.crest</groupId>
-            <artifactId>codegist-crest</artifactId>
-            <version>2.0.0-RC2</version>
-            <classifier>all</classifier>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-databind</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
         <dependency>
             <groupId>javax.ws.rs</groupId>
             <artifactId>jsr311-api</artifactId>
             <version>1.1.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.20.1</version>
         </dependency>
 
         <dependency>

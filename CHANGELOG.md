@@ -1,6 +1,10 @@
 Changelog
 ===
 
+### 1.26
+
+-   Maintenance: Remove deprecated crest-library with alternative impl
+
 ### 1.25
 
 -   Updates on dependencies
