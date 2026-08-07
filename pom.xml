@@ -189,7 +189,6 @@
         <dependency>
             <groupId>io.jenkins.plugins</groupId>
             <artifactId>commons-lang3-api</artifactId>
-            <scope>test</scope>
         </dependency>
 
         <dependency>
